@@ -25,12 +25,18 @@ export class NuevoDespliegueComponent implements OnInit {
   microservicio: string = '';
   auditor: string = '';
   fecha: string = '';
-  checklistSeleccionado: boolean[] = [];
+  responsableChecklistSeleccionado: boolean[] = [];
+  auditorChecklistSeleccionado: boolean[] = [];
   despliegueEditado: any = {};
   editando: boolean = false;
 
   ngOnInit(): void {
-    this.checklistSeleccionado = new Array(this.campos.length).fill(false);
+    this.responsableChecklistSeleccionado = new Array(this.campos.length).fill(
+      false
+    );
+    this.auditorChecklistSeleccionado = new Array(this.campos.length).fill(
+      false
+    );
 
     if (this.despliegue) {
       this.responsable = this.despliegue.responsable;
@@ -43,9 +49,14 @@ export class NuevoDespliegueComponent implements OnInit {
         this.despliegue.checklist &&
         Array.isArray(this.despliegue.checklist)
       ) {
-        this.checklistSeleccionado = this.campos.map((campo) =>
+        this.responsableChecklistSeleccionado = this.campos.map((campo) =>
           this.despliegue.checklist.some(
-            (check: any) => check.valor === campo.valor
+            (check: any) => check.valor === campo.valor && check.responsable
+          )
+        );
+        this.auditorChecklistSeleccionado = this.campos.map((campo) =>
+          this.despliegue.checklist.some(
+            (check: any) => check.valor === campo.valor && check.auditor
           )
         );
       }
@@ -57,14 +68,15 @@ export class NuevoDespliegueComponent implements OnInit {
         microservicio: this.microservicio,
         auditor: this.auditor,
         fecha: this.fecha,
-        checklistSeleccionado: this.checklistSeleccionado,
+        responsableChecklistSeleccionado: this.responsableChecklistSeleccionado,
+        auditorChecklistSeleccionado: this.auditorChecklistSeleccionado,
       };
       this.editando = true;
     }
   }
 
   get todosMarcados(): boolean {
-    return this.checklistSeleccionado.every((item) => item);
+    return this.responsableChecklistSeleccionado.every((item) => item);
   }
 
   get inputsLlenos(): boolean {
@@ -90,9 +102,11 @@ export class NuevoDespliegueComponent implements OnInit {
         microservicio: this.microservicio,
         auditor: this.auditor,
         fecha: this.fecha,
-        checklist: this.campos.filter(
-          (_, index) => this.checklistSeleccionado[index]
-        ),
+        checklist: this.campos.map((campo, index) => ({
+          valor: campo.valor,
+          responsable: this.responsableChecklistSeleccionado[index],
+          auditor: this.auditorChecklistSeleccionado[index],
+        })),
       };
       console.log(this.despliegueEditado);
       this.editar.emit(this.despliegueEditado);
@@ -103,9 +117,11 @@ export class NuevoDespliegueComponent implements OnInit {
         microservicio: this.microservicio,
         auditor: this.auditor,
         fecha: this.fecha,
-        checklist: this.campos.filter(
-          (_, index) => this.checklistSeleccionado[index]
-        ),
+        checklist: this.campos.map((campo, index) => ({
+          valor: campo.valor,
+          responsable: this.responsableChecklistSeleccionado[index],
+          auditor: this.auditorChecklistSeleccionado[index],
+        })),
       };
       this.guardar.emit(datos);
     }

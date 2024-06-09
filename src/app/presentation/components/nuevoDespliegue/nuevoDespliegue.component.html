@@ -5,7 +5,7 @@
     class="bg-gray-900 rounded-lg overflow-hidden p-6 w-full md:w-3/4 lg:w-1/2 mx-auto"
   >
     <div class="flex flex-col md:flex-row">
-      <div class="w-full md:w-2/3 p-3 flex flex-col">
+      <div class="w-full md:w-3/5 p-3 flex flex-col">
         <h2 class="text-2xl font-bold text-center text-white mb-4">
           Nuevo Despliegue
         </h2>
@@ -54,7 +54,7 @@
         </div>
       </div>
       <div class="hidden md:block border-l border-gray-700 mx-6"></div>
-      <div class="w-full md:w-1/3 p-3 flex flex-col">
+      <div class="w-full md:w-2/5 p-3 flex flex-col">
         <h2 class="text-2xl font-bold text-center text-white mb-4">
           Checklist
         </h2>
@@ -69,15 +69,32 @@
               <span class="text-white mr-4"
                 >{{ i + 1 }}. {{ campo.valor }}</span
               >
-              <input
-                type="checkbox"
-                [(ngModel)]="checklistSeleccionado[i]"
-                (ngModelChange)="
-                  checklistSeleccionado[i] !== undefined &&
-                    (checklistSeleccionado[i] = $event)
-                "
-                class="transform scale-100"
-              />
+              <div class="flex items-center space-x-2">
+                <div class="flex flex-col items-center">
+                  <span class="text-white">R</span>
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="responsableChecklistSeleccionado[i]"
+                    (ngModelChange)="
+                      responsableChecklistSeleccionado[i] !== undefined &&
+                        (responsableChecklistSeleccionado[i] = $event)
+                    "
+                    class="transform scale-100"
+                  />
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="text-white">A</span>
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="auditorChecklistSeleccionado[i]"
+                    (ngModelChange)="
+                      auditorChecklistSeleccionado[i] !== undefined &&
+                        (auditorChecklistSeleccionado[i] = $event)
+                    "
+                    class="transform scale-100"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
