@@ -29,9 +29,13 @@ export default class UsuariosComponent implements OnInit {
   public modalNuevoUsuarioAbierto = false;
   public showConfirmDeleteModal = false;
   public usuarios: Usuario[] = [];
+  public pagedUsuarios: Usuario[] = [];
   public nuevoUsuario: Usuario = { nombre: '', apellido: '', fechaAlta: '' };
   public usuarioSeleccionado: Usuario | null = null;
   public userToDelete: Usuario | null = null;
+  public itemsPerPage = 5;
+  public currentPage = 1;
+  public totalPages = 1;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -46,7 +50,35 @@ export default class UsuariosComponent implements OnInit {
       id: doc.id,
       ...doc.data(),
     })) as Usuario[];
+    this.totalPages = Math.ceil(this.usuarios.length / this.itemsPerPage);
+    this.actualizarPagina();
     this.cdr.markForCheck();
+  }
+
+  actualizarPagina() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.pagedUsuarios = this.usuarios.slice(startIndex, endIndex);
+  }
+
+  cambiarItemsPorPagina() {
+    this.totalPages = Math.ceil(this.usuarios.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.actualizarPagina();
+  }
+
+  paginaAnterior() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.actualizarPagina();
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.actualizarPagina();
+    }
   }
 
   abrirNuevoUsuarioModal() {
@@ -75,6 +107,8 @@ export default class UsuariosComponent implements OnInit {
       const usuariosRef = collection(db, 'usuarios');
       const docRef = await addDoc(usuariosRef, this.nuevoUsuario);
       this.usuarios.push({ ...this.nuevoUsuario, id: docRef.id });
+      this.totalPages = Math.ceil(this.usuarios.length / this.itemsPerPage);
+      this.actualizarPagina();
       this.cdr.markForCheck();
     } catch (error) {
       console.error('Error guardando el nuevo usuario en Firestore:', error);
@@ -97,6 +131,7 @@ export default class UsuariosComponent implements OnInit {
           id: this.usuarioSeleccionado!.id,
         };
       }
+      this.actualizarPagina();
       this.cdr.markForCheck();
     } catch (error) {
       console.error('Error actualizando el usuario en Firestore:', error);
@@ -104,13 +139,15 @@ export default class UsuariosComponent implements OnInit {
   }
 
   editarUsuario(index: number) {
-    this.usuarioSeleccionado = this.usuarios[index];
-    this.nuevoUsuario = { ...this.usuarioSeleccionado }; // Cargar los datos en el formulario
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.usuarioSeleccionado = this.usuarios[startIndex + index];
+    this.nuevoUsuario = { ...this.usuarioSeleccionado };
     this.modalNuevoUsuarioAbierto = true;
   }
 
   confirmDeleteUser(index: number) {
-    this.userToDelete = this.usuarios[index];
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.userToDelete = this.usuarios[startIndex + index];
     this.showConfirmDeleteModal = true;
   }
 
@@ -121,6 +158,8 @@ export default class UsuariosComponent implements OnInit {
         const docRef = doc(db, 'usuarios', id);
         await deleteDoc(docRef);
         this.usuarios = this.usuarios.filter((user) => user.id !== id);
+        this.totalPages = Math.ceil(this.usuarios.length / this.itemsPerPage);
+        this.actualizarPagina();
         this.showConfirmDeleteModal = false;
         this.cdr.markForCheck();
       } catch (error) {

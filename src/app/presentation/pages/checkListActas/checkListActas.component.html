@@ -47,10 +47,13 @@
               {{ i + 1 }}
             </td>
             <td class="px-4 py-2 border-b border-gray-700 boxPerso">
-              <div
-                *ngIf="!campo.editando; else mostrarValor"
-                class="w-full h-full flex items-center justify-center"
-              >
+              <div class="flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="campo.responsableChecked"
+                  (change)="checkResponsableStatus()"
+                  class="mr-2"
+                />
                 {{ campo.valor }}
               </div>
               <ng-template #mostrarValor>
@@ -94,7 +97,13 @@
         <button class="btn-primary mr-1" (click)="cerrarModal()">
           Cancelar
         </button>
-        <button class="btn-primary" (click)="guardarCambios()">Guardar</button>
+        <button
+          class="btn-primary"
+          (click)="guardarCambios()"
+          [disabled]="!todosResponsablesMarcados()"
+        >
+          Guardar
+        </button>
       </div>
     </div>
   </div>
@@ -127,11 +136,11 @@
     </thead>
     <tbody>
       <tr
-        *ngFor="let dato of datosGuardados; let i = index"
+        *ngFor="let dato of pagedDatosGuardados; let i = index"
         class="hover:bg-gray-700 transition-colors"
       >
         <td class="px-4 py-2 border-b border-gray-700 text-center">
-          {{ i + 1 }}
+          {{ i + 1 + (currentPage - 1) * itemsPerPage }}
         </td>
         <td class="px-4 py-2 border-b border-gray-700 text-center">
           {{ dato.responsable }}
@@ -196,4 +205,46 @@
       </tr>
     </tbody>
   </table>
+</div>
+
+<!-- Paginador -->
+<div
+  class="flex justify-between items-center mt-4 px-4 py-2 bg-gray-900 rounded-md"
+>
+  <div class="flex items-center">
+    <label for="itemsPerPage" class="text-gray-300 mr-2"
+      >Items por página:</label
+    >
+    <select
+      id="itemsPerPage"
+      [(ngModel)]="itemsPerPage"
+      (change)="cambiarItemsPorPagina()"
+      class="rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+    >
+      <option *ngFor="let size of [5, 10, 15, 20]" [value]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+  <div class="flex items-center space-x-2">
+    <button
+      class="btn-secondary"
+      (click)="paginaAnterior()"
+      [disabled]="currentPage === 1"
+      [class.opacity-50]="currentPage === 1"
+    >
+      Anterior
+    </button>
+    <span class="text-gray-300"
+      >Página {{ currentPage }} de {{ totalPages }}</span
+    >
+    <button
+      class="btn-secondary"
+      (click)="paginaSiguiente()"
+      [disabled]="currentPage === totalPages"
+      [class.opacity-50]="currentPage === totalPages"
+    >
+      Siguiente
+    </button>
+  </div>
 </div>

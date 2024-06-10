@@ -6,12 +6,11 @@ import {
 } from '@angular/core';
 import {
   collection,
-  doc,
-  getDoc,
-  setDoc,
-  addDoc,
   getDocs,
+  addDoc,
+  setDoc,
   deleteDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from '../../../database/firebase';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +28,7 @@ export default class MicroserviciosComponent implements OnInit {
   public modalNuevoMicroservicioAbierto = false;
   public showConfirmDeleteModal = false;
   public microservicios: Microservicio[] = [];
+  public pagedMicroservicios: Microservicio[] = [];
   public nuevoMicroservicio: Microservicio = {
     nombre: '',
     ambiente: 'WF3/Actas Digitales',
@@ -36,6 +36,9 @@ export default class MicroserviciosComponent implements OnInit {
   };
   public microservicioSeleccionado: Microservicio | null = null;
   public microservicioToDelete: Microservicio | null = null;
+  public itemsPerPage = 5;
+  public currentPage = 1;
+  public totalPages = 1;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -50,7 +53,35 @@ export default class MicroserviciosComponent implements OnInit {
       id: doc.id,
       ...doc.data(),
     })) as Microservicio[];
+    this.totalPages = Math.ceil(this.microservicios.length / this.itemsPerPage);
+    this.actualizarPagina();
     this.cdr.markForCheck();
+  }
+
+  actualizarPagina() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.pagedMicroservicios = this.microservicios.slice(startIndex, endIndex);
+  }
+
+  cambiarItemsPorPagina() {
+    this.totalPages = Math.ceil(this.microservicios.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.actualizarPagina();
+  }
+
+  paginaAnterior() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.actualizarPagina();
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.actualizarPagina();
+    }
   }
 
   abrirNuevoMicroservicioModal() {
@@ -87,6 +118,10 @@ export default class MicroserviciosComponent implements OnInit {
       const microserviciosRef = collection(db, 'microservicios');
       const docRef = await addDoc(microserviciosRef, this.nuevoMicroservicio);
       this.microservicios.push({ ...this.nuevoMicroservicio, id: docRef.id });
+      this.totalPages = Math.ceil(
+        this.microservicios.length / this.itemsPerPage
+      );
+      this.actualizarPagina();
       this.cdr.markForCheck();
     } catch (error) {
       console.error(
@@ -116,6 +151,7 @@ export default class MicroserviciosComponent implements OnInit {
           id: this.microservicioSeleccionado!.id,
         };
       }
+      this.actualizarPagina();
       this.cdr.markForCheck();
     } catch (error) {
       console.error('Error actualizando el microservicio en Firestore:', error);
@@ -123,13 +159,15 @@ export default class MicroserviciosComponent implements OnInit {
   }
 
   editarMicroservicio(index: number) {
-    this.microservicioSeleccionado = this.microservicios[index];
-    this.nuevoMicroservicio = { ...this.microservicioSeleccionado }; // Cargar los datos en el formulario
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.microservicioSeleccionado = this.microservicios[startIndex + index];
+    this.nuevoMicroservicio = { ...this.microservicioSeleccionado };
     this.modalNuevoMicroservicioAbierto = true;
   }
 
   confirmDeleteMicroservicio(index: number) {
-    this.microservicioToDelete = this.microservicios[index];
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.microservicioToDelete = this.microservicios[startIndex + index];
     this.showConfirmDeleteModal = true;
   }
 
@@ -142,6 +180,10 @@ export default class MicroserviciosComponent implements OnInit {
         this.microservicios = this.microservicios.filter(
           (microservicio) => microservicio.id !== id
         );
+        this.totalPages = Math.ceil(
+          this.microservicios.length / this.itemsPerPage
+        );
+        this.actualizarPagina();
         this.showConfirmDeleteModal = false;
         this.cdr.markForCheck();
       } catch (error) {

@@ -96,11 +96,11 @@
     </thead>
     <tbody>
       <tr
-        *ngFor="let microservicio of microservicios; let i = index"
+        *ngFor="let microservicio of pagedMicroservicios; let i = index"
         class="hover:bg-gray-700 transition-colors"
       >
         <td class="px-4 py-2 border-b border-gray-700 text-center">
-          {{ i + 1 }}
+          {{ i + 1 + (currentPage - 1) * itemsPerPage }}
         </td>
         <td class="px-4 py-2 border-b border-gray-700 text-center">
           {{ microservicio.nombre }}
@@ -128,4 +128,46 @@
       </tr>
     </tbody>
   </table>
+</div>
+
+<!-- Paginador Mejorado -->
+<div
+  class="flex justify-between items-center mt-4 px-4 py-2 bg-gray-900 rounded-md"
+>
+  <div class="flex items-center">
+    <label for="itemsPerPage" class="text-gray-300 mr-2"
+      >Items por página:</label
+    >
+    <select
+      id="itemsPerPage"
+      [(ngModel)]="itemsPerPage"
+      (change)="cambiarItemsPorPagina()"
+      class="rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+    >
+      <option *ngFor="let size of [5, 10, 15, 20]" [value]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+  <div class="flex items-center space-x-2">
+    <button
+      class="btn-secondary"
+      (click)="paginaAnterior()"
+      [disabled]="currentPage === 1"
+      [class.opacity-50]="currentPage === 1"
+    >
+      Anterior
+    </button>
+    <span class="text-gray-300"
+      >Página {{ currentPage }} de {{ totalPages }}</span
+    >
+    <button
+      class="btn-secondary"
+      (click)="paginaSiguiente()"
+      [disabled]="currentPage === totalPages"
+      [class.opacity-50]="currentPage === totalPages"
+    >
+      Siguiente
+    </button>
+  </div>
 </div>

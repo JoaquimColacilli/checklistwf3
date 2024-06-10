@@ -29,9 +29,14 @@ import { NuevoDespliegueComponent } from '../../components/nuevoDespliegue/nuevo
 export default class CheckListActasComponent implements OnInit {
   modalAbierto: boolean = false;
   modalNuevoDespliegueAbierto = false;
-  campos: { valor: string; editando: boolean; confirmarEliminar?: boolean }[] =
-    [];
+  campos: {
+    valor: string;
+    editando: boolean;
+    confirmarEliminar?: boolean;
+    responsableChecked: boolean;
+  }[] = [];
   datosGuardados: any[] = [];
+  pagedDatosGuardados: any[] = [];
   despliegueSeleccionado: any = null;
   esNuevoDespliegue: boolean = true;
   deploymentToDelete?: any = {
@@ -45,6 +50,9 @@ export default class CheckListActasComponent implements OnInit {
   };
   showConfirmDeleteModal = false;
   ambiente: string = 'WF3'; // Ambiente para cargar los microservicios correspondientes
+  itemsPerPage = 5;
+  currentPage = 1;
+  totalPages = 1;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -81,7 +89,35 @@ export default class CheckListActasComponent implements OnInit {
       id: doc.id,
       ...doc.data(),
     }));
+    this.totalPages = Math.ceil(this.datosGuardados.length / this.itemsPerPage);
+    this.actualizarPagina();
     this.cdr.markForCheck();
+  }
+
+  actualizarPagina() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.pagedDatosGuardados = this.datosGuardados.slice(startIndex, endIndex);
+  }
+
+  cambiarItemsPorPagina() {
+    this.totalPages = Math.ceil(this.datosGuardados.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.actualizarPagina();
+  }
+
+  paginaAnterior() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.actualizarPagina();
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.actualizarPagina();
+    }
   }
 
   abrirModal() {
@@ -93,7 +129,7 @@ export default class CheckListActasComponent implements OnInit {
   }
 
   agregarCampo() {
-    this.campos.push({ valor: '', editando: true });
+    this.campos.push({ valor: '', editando: true, responsableChecked: false });
   }
 
   confirmarEliminar(index: number) {
@@ -156,6 +192,14 @@ export default class CheckListActasComponent implements OnInit {
     await this.actualizarCampoEnFirestore('WF3');
   }
 
+  todosResponsablesMarcados(): boolean {
+    return this.campos.every((campo) => campo.responsableChecked);
+  }
+
+  checkResponsableStatus() {
+    this.cdr.markForCheck();
+  }
+
   abrirNuevoDespliegueModal() {
     this.modalNuevoDespliegueAbierto = true;
     this.despliegueSeleccionado = null;
@@ -177,6 +221,10 @@ export default class CheckListActasComponent implements OnInit {
       const docRef = await addDoc(nuevosDesplieguesRef, { ...datos, ambiente });
       console.log('Nuevo despliegue guardado con ID: ', docRef.id);
       this.datosGuardados.push({ ...datos, id: docRef.id });
+      this.totalPages = Math.ceil(
+        this.datosGuardados.length / this.itemsPerPage
+      );
+      this.actualizarPagina();
       this.cdr.markForCheck();
       this.cerrarModalNuevoDespliegue();
     } catch (error) {
@@ -200,7 +248,7 @@ export default class CheckListActasComponent implements OnInit {
       if (index > -1) {
         this.datosGuardados[index] = datos;
       }
-
+      this.actualizarPagina();
       this.cdr.markForCheck();
       this.cerrarModalNuevoDespliegue();
     } catch (error) {
@@ -214,6 +262,10 @@ export default class CheckListActasComponent implements OnInit {
       const docRef = doc(db, `nuevosDespliegues_${ambiente}`, id);
       await deleteDoc(docRef);
       this.datosGuardados = this.datosGuardados.filter((_, i) => i !== index);
+      this.totalPages = Math.ceil(
+        this.datosGuardados.length / this.itemsPerPage
+      );
+      this.actualizarPagina();
       console.log('Despliegue eliminado con ID: ', id);
       this.showConfirmDeleteModal = false;
       this.cdr.markForCheck();

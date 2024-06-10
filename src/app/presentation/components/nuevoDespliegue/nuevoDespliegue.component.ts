@@ -163,7 +163,7 @@ export class NuevoDespliegueComponent implements OnInit, OnChanges {
         checklist: this.campos.map((campo, index) => ({
           valor: campo.valor,
           responsable: this.responsableChecklistSeleccionado[index],
-          auditor: this.auditorChecklistSeleccionado[index],
+          auditor: this.auditorChecklistSeleccionado[index] || null,
         })),
       };
       this.editar.emit(this.despliegueEditado);
@@ -177,7 +177,7 @@ export class NuevoDespliegueComponent implements OnInit, OnChanges {
         checklist: this.campos.map((campo, index) => ({
           valor: campo.valor,
           responsable: this.responsableChecklistSeleccionado[index],
-          auditor: this.auditorChecklistSeleccionado[index],
+          auditor: this.auditorChecklistSeleccionado[index] || null,
         })),
       };
       this.guardar.emit(datos);
