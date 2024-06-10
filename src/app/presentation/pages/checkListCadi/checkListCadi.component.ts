@@ -6,25 +6,23 @@ import {
 } from '@angular/core';
 import {
   collection,
-  doc,
-  getDoc,
-  setDoc,
-  addDoc,
   getDocs,
+  doc,
+  setDoc,
   deleteDoc,
+  addDoc,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '../../../database/firebase';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NuevoDespliegueComponent } from '../../components/nuevoDespliegue/nuevoDespliegue.component';
-import { audit } from 'rxjs';
 
 @Component({
   selector: 'app-check-list-cadi',
   standalone: true,
   imports: [CommonModule, FormsModule, NuevoDespliegueComponent],
   templateUrl: './checkListCadi.component.html',
-  styleUrls: ['../styleCheckList.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class CheckListCadiComponent implements OnInit {
@@ -43,14 +41,15 @@ export default class CheckListCadiComponent implements OnInit {
     microservicio: null,
     responsable: null,
     tag: null,
-  }; // Optional property to store deployment ID
-  showConfirmDeleteModal = false; // Flag for confirmation modal visibility
+  };
+  showConfirmDeleteModal = false;
+  ambiente: string = 'CADI';
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   async ngOnInit(): Promise<void> {
-    const ambiente = 'CADI'; // O 'WF3', según el caso
-    await this.cargarDespliegues(ambiente);
-    await this.cargarDatos(ambiente);
+    await this.cargarDespliegues(this.ambiente);
+    await this.cargarDatos(this.ambiente);
   }
 
   async cargarDatos(ambiente: string) {
@@ -73,6 +72,7 @@ export default class CheckListCadiComponent implements OnInit {
       console.log('No se encontraron datos en Firestore.');
     }
   }
+
   async cargarDespliegues(ambiente: string) {
     const desplieguesRef = collection(db, `nuevosDespliegues_${ambiente}`);
     const querySnapshot = await getDocs(desplieguesRef);

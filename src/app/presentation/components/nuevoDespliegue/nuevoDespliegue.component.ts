@@ -1,7 +1,20 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  SimpleChanges,
+  OnChanges,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../../../database/firebase';
+import { Usuario } from '../../../interfaces/usuario';
+import { Microservicio } from '../../../interfaces/microservicio';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-nuevo-despliegue',
@@ -9,16 +22,20 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [CommonModule, FormsModule, MatTooltipModule],
   templateUrl: './nuevoDespliegue.component.html',
 })
-export class NuevoDespliegueComponent implements OnInit {
+export class NuevoDespliegueComponent implements OnInit, OnChanges {
   @Input() campos: {
     valor: string;
     editando: boolean;
     confirmarEliminar?: boolean;
   }[] = [];
   @Input() despliegue: any;
+  @Input() ambiente: string = '';
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardar = new EventEmitter<any>();
   @Output() editar = new EventEmitter<any>();
+
+  usuarios: Usuario[] = [];
+  microservicios: Microservicio[] = [];
 
   responsable: string = '';
   tag: string = '';
@@ -30,7 +47,53 @@ export class NuevoDespliegueComponent implements OnInit {
   despliegueEditado: any = {};
   editando: boolean = false;
 
-  ngOnInit(): void {
+  loadingUsuarios: boolean = true;
+  loadingMicroservicios: boolean = true;
+
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  ngOnInit() {
+    console.log(this.ambiente);
+
+    this.cargarUsuarios();
+    this.cargarMicroservicios();
+
+    if (this.despliegue) {
+      this.inicializarDespliegue();
+    }
+  }
+
+  async ngOnChanges(changes: SimpleChanges) {
+    if (changes.ambiente) {
+      this.loadingMicroservicios = true;
+      await this.cargarMicroservicios();
+    }
+  }
+
+  async cargarUsuarios() {
+    const usuariosRef = collection(db, 'usuarios');
+    const querySnapshot = await getDocs(usuariosRef);
+    this.usuarios = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Usuario[];
+    this.loadingUsuarios = false;
+    this.cdr.detectChanges();
+  }
+
+  async cargarMicroservicios() {
+    const microserviciosRef = collection(db, 'microservicios');
+    const q = query(microserviciosRef, where('ambiente', '==', this.ambiente));
+    const querySnapshot = await getDocs(q);
+    this.microservicios = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Microservicio[];
+    this.loadingMicroservicios = false;
+    this.cdr.detectChanges();
+  }
+
+  inicializarDespliegue() {
     this.responsableChecklistSeleccionado = new Array(this.campos.length).fill(
       false
     );
@@ -38,41 +101,36 @@ export class NuevoDespliegueComponent implements OnInit {
       false
     );
 
-    if (this.despliegue) {
-      this.responsable = this.despliegue.responsable;
-      this.tag = this.despliegue.tag;
-      this.microservicio = this.despliegue.microservicio;
-      this.auditor = this.despliegue.auditor;
-      this.fecha = this.despliegue.fecha;
+    this.responsable = this.despliegue.responsable;
+    this.tag = this.despliegue.tag;
+    this.microservicio = this.despliegue.microservicio;
+    this.auditor = this.despliegue.auditor;
+    this.fecha = this.despliegue.fecha;
 
-      if (
-        this.despliegue.checklist &&
-        Array.isArray(this.despliegue.checklist)
-      ) {
-        this.responsableChecklistSeleccionado = this.campos.map((campo) =>
-          this.despliegue.checklist.some(
-            (check: any) => check.valor === campo.valor && check.responsable
-          )
-        );
-        this.auditorChecklistSeleccionado = this.campos.map((campo) =>
-          this.despliegue.checklist.some(
-            (check: any) => check.valor === campo.valor && check.auditor
-          )
-        );
-      }
-
-      this.despliegueEditado = {
-        ...this.despliegue,
-        responsable: this.responsable,
-        tag: this.tag,
-        microservicio: this.microservicio,
-        auditor: this.auditor,
-        fecha: this.fecha,
-        responsableChecklistSeleccionado: this.responsableChecklistSeleccionado,
-        auditorChecklistSeleccionado: this.auditorChecklistSeleccionado,
-      };
-      this.editando = true;
+    if (this.despliegue.checklist && Array.isArray(this.despliegue.checklist)) {
+      this.responsableChecklistSeleccionado = this.campos.map((campo) =>
+        this.despliegue.checklist.some(
+          (check: any) => check.valor === campo.valor && check.responsable
+        )
+      );
+      this.auditorChecklistSeleccionado = this.campos.map((campo) =>
+        this.despliegue.checklist.some(
+          (check: any) => check.valor === campo.valor && check.auditor
+        )
+      );
     }
+
+    this.despliegueEditado = {
+      ...this.despliegue,
+      responsable: this.responsable,
+      tag: this.tag,
+      microservicio: this.microservicio,
+      auditor: this.auditor,
+      fecha: this.fecha,
+      responsableChecklistSeleccionado: this.responsableChecklistSeleccionado,
+      auditorChecklistSeleccionado: this.auditorChecklistSeleccionado,
+    };
+    this.editando = true;
   }
 
   get todosMarcados(): boolean {
@@ -108,7 +166,6 @@ export class NuevoDespliegueComponent implements OnInit {
           auditor: this.auditorChecklistSeleccionado[index],
         })),
       };
-      console.log(this.despliegueEditado);
       this.editar.emit(this.despliegueEditado);
     } else {
       const datos = {

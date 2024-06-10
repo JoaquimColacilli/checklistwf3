@@ -12,11 +12,19 @@
         <div class="flex-grow space-y-4">
           <div>
             <label class="block text-white mb-1">Responsable</label>
-            <input
+            <select
               [(ngModel)]="responsable"
               (ngModelChange)="despliegueEditado.responsable = $event"
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-            />
+            >
+              <option *ngIf="loadingUsuarios" disabled>Cargando...</option>
+              <option
+                *ngFor="let usuario of usuarios"
+                [value]="usuario.nombre + ' ' + usuario.apellido"
+              >
+                {{ usuario.nombre }} {{ usuario.apellido }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-white mb-1">Tag</label>
@@ -28,19 +36,37 @@
           </div>
           <div>
             <label class="block text-white mb-1">Microservicio</label>
-            <input
+            <select
               [(ngModel)]="microservicio"
               (ngModelChange)="despliegueEditado.microservicio = $event"
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-            />
+            >
+              <option *ngIf="loadingMicroservicios" disabled>
+                Cargando...
+              </option>
+              <option
+                *ngFor="let micro of microservicios"
+                [value]="micro.nombre"
+              >
+                {{ micro.nombre }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-white mb-1">Auditor</label>
-            <input
+            <select
               [(ngModel)]="auditor"
               (ngModelChange)="despliegueEditado.auditor = $event"
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-            />
+            >
+              <option *ngIf="loadingUsuarios" disabled>Cargando...</option>
+              <option
+                *ngFor="let usuario of usuarios"
+                [value]="usuario.nombre + ' ' + usuario.apellido"
+              >
+                {{ usuario.nombre }} {{ usuario.apellido }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-white mb-1">Fecha</label>

@@ -6,12 +6,12 @@ import {
 } from '@angular/core';
 import {
   collection,
-  doc,
-  getDoc,
-  setDoc,
-  addDoc,
   getDocs,
+  doc,
+  setDoc,
   deleteDoc,
+  addDoc,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '../../../database/firebase';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ import { NuevoDespliegueComponent } from '../../components/nuevoDespliegue/nuevo
   standalone: true,
   imports: [CommonModule, FormsModule, NuevoDespliegueComponent],
   templateUrl: './checkListActas.component.html',
-  styleUrl: '../styleCheckList.css',
+  styleUrls: ['../styleCheckList.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class CheckListActasComponent implements OnInit {
@@ -44,12 +44,13 @@ export default class CheckListActasComponent implements OnInit {
     tag: null,
   };
   showConfirmDeleteModal = false;
+  ambiente: string = 'WF3'; // Ambiente para cargar los microservicios correspondientes
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   async ngOnInit(): Promise<void> {
-    const ambiente = 'WF3';
-    await this.cargarDespliegues(ambiente);
-    await this.cargarDatos(ambiente);
+    await this.cargarDespliegues(this.ambiente);
+    await this.cargarDatos(this.ambiente);
   }
 
   async cargarDatos(ambiente: string) {
@@ -72,6 +73,7 @@ export default class CheckListActasComponent implements OnInit {
       console.log('No se encontraron datos en Firestore.');
     }
   }
+
   async cargarDespliegues(ambiente: string) {
     const desplieguesRef = collection(db, `nuevosDespliegues_${ambiente}`);
     const querySnapshot = await getDocs(desplieguesRef);

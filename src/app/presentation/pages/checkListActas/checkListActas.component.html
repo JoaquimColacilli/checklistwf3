@@ -101,16 +101,15 @@
 </div>
 
 <!-- Modal Nuevo Despliegue -->
-
 <app-nuevo-despliegue
   *ngIf="modalNuevoDespliegueAbierto"
   [campos]="campos"
   [despliegue]="esNuevoDespliegue ? null : despliegueSeleccionado"
+  [ambiente]="ambiente"
   (cerrar)="cerrarModalNuevoDespliegue()"
   (guardar)="guardarNuevoDespliegue($event, 'WF3')"
   (editar)="editarNuevoDespliegue($event, 'WF3')"
->
-</app-nuevo-despliegue>
+></app-nuevo-despliegue>
 
 <!-- Tabla Despliegues -->
 <div class="overflow-x-auto mt-4">

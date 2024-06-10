@@ -11,9 +11,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./presentation/pages/checkListPage/checkListPage.component'),
         data: {
-          icon: 'fa fa-list-ol',
+          icon: 'fa fa-list-alt',
           title: 'Menú',
           description: 'Menú de checklists WF3 y CADI',
+          section: 'checklists',
         },
       },
       {
@@ -23,9 +24,10 @@ export const routes: Routes = [
             './presentation/pages/checkListActas/checkListActas.component'
           ),
         data: {
-          icon: 'fa fa-list-ol',
-          title: 'CheckListActas',
+          icon: 'fa fa-list-alt',
+          title: 'WF3/Actas',
           description: 'Checklist para Actas digitales y Wf3',
+          section: 'checklists',
         },
       },
       {
@@ -33,9 +35,34 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./presentation/pages/checkListCadi/checkListCadi.component'),
         data: {
-          icon: 'fa fa-list-ol',
-          title: 'CheckListCadi',
+          icon: 'fa fa-list-alt',
+          title: 'CADI',
           description: 'Checklist para CADI',
+          section: 'checklists',
+        },
+      },
+      {
+        path: 'microservicios',
+        loadComponent: () =>
+          import(
+            './presentation/pages/microservicios/microservicios.component'
+          ),
+        data: {
+          icon: 'fa fa-microchip',
+          title: 'Microservicios',
+          description: 'Microservicios WF3/CADI',
+          section: 'microservicios',
+        },
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./presentation/pages/usuarios/usuarios.component'),
+        data: {
+          icon: 'fa fa-user',
+          title: 'Usuarios',
+          description: 'Usuarios WF3/CADI',
+          section: 'usuarios',
         },
       },
       {
