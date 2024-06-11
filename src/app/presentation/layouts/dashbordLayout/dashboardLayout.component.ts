@@ -12,7 +12,21 @@ import { routes } from '../../../app.routes';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardLayoutComponent {
-  public routes = routes[0].children?.filter(
-    (route) => route.data && route.path !== 'checkListPage'
-  );
+  public groupedRoutes: { [key: string]: any[] } = {};
+
+  constructor() {
+    const childrenRoutes = routes[0].children?.filter(
+      (route) => route.data && route.path !== 'checkListPage'
+    );
+    if (childrenRoutes) {
+      this.groupedRoutes = childrenRoutes.reduce((acc, route) => {
+        const section = route.data?.section || 'default';
+        if (!acc[section]) {
+          acc[section] = [];
+        }
+        acc[section].push(route);
+        return acc;
+      }, {} as { [key: string]: any[] });
+    }
+  }
 }

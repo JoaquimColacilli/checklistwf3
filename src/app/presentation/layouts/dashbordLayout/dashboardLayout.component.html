@@ -8,20 +8,20 @@
     >
       CheckListWf3<span class="text-indigo-500">.</span>
     </h1>
-    <span class="text-xl">Proyectos</span>
 
-    <div class="border-gray-700 border my-3"></div>
+    <ng-container *ngFor="let section of groupedRoutes | keyvalue">
+      <span class="text-xl">{{ section.key | titlecase }}</span>
 
-    <!-- Nav Links -->
-    @for (route of routes; track route.path){
-    <app-sidebar-menu-item
-      [description]="route.data!['description']"
-      [icon]="route.data!['icon']"
-      [path]="route.path!"
-      [title]="route.data!['title']"
-    />
-    }
-    <!-- End Nav Links -->
+      <ng-container *ngFor="let route of section.value">
+        <app-sidebar-menu-item
+          [description]="route.data['description']"
+          [icon]="route.data['icon']"
+          [path]="route.path"
+          [title]="route.data['title']"
+        />
+      </ng-container>
+      <div class="border-gray-700 border my-3"></div>
+    </ng-container>
   </nav>
 
   <section
@@ -29,7 +29,7 @@
   >
     <div class="flex h-full flex-row">
       <div class="flex flex-col flex-auto p-1">
-        <router-outlet />
+        <router-outlet></router-outlet>
       </div>
     </div>
   </section>

@@ -6,25 +6,23 @@ import {
 } from '@angular/core';
 import {
   collection,
-  doc,
-  getDoc,
-  setDoc,
-  addDoc,
   getDocs,
+  doc,
+  setDoc,
   deleteDoc,
+  addDoc,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '../../../database/firebase';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NuevoDespliegueComponent } from '../../components/nuevoDespliegue/nuevoDespliegue.component';
-import { audit } from 'rxjs';
 
 @Component({
   selector: 'app-check-list-cadi',
   standalone: true,
   imports: [CommonModule, FormsModule, NuevoDespliegueComponent],
   templateUrl: './checkListCadi.component.html',
-  styleUrls: ['../styleCheckList.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class CheckListCadiComponent implements OnInit {
@@ -33,6 +31,7 @@ export default class CheckListCadiComponent implements OnInit {
   campos: { valor: string; editando: boolean; confirmarEliminar?: boolean }[] =
     [];
   datosGuardados: any[] = [];
+  pagedDatosGuardados: any[] = [];
   despliegueSeleccionado: any = null;
   esNuevoDespliegue: boolean = true;
   deploymentToDelete?: any = {
@@ -43,14 +42,18 @@ export default class CheckListCadiComponent implements OnInit {
     microservicio: null,
     responsable: null,
     tag: null,
-  }; // Optional property to store deployment ID
-  showConfirmDeleteModal = false; // Flag for confirmation modal visibility
+  };
+  showConfirmDeleteModal = false;
+  ambiente: string = 'CADI';
+  itemsPerPage = 5;
+  currentPage = 1;
+  totalPages = 1;
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   async ngOnInit(): Promise<void> {
-    const ambiente = 'CADI'; // O 'WF3', según el caso
-    await this.cargarDespliegues(ambiente);
-    await this.cargarDatos(ambiente);
+    await this.cargarDespliegues(this.ambiente);
+    await this.cargarDatos(this.ambiente);
   }
 
   async cargarDatos(ambiente: string) {
@@ -73,6 +76,7 @@ export default class CheckListCadiComponent implements OnInit {
       console.log('No se encontraron datos en Firestore.');
     }
   }
+
   async cargarDespliegues(ambiente: string) {
     const desplieguesRef = collection(db, `nuevosDespliegues_${ambiente}`);
     const querySnapshot = await getDocs(desplieguesRef);
@@ -80,7 +84,35 @@ export default class CheckListCadiComponent implements OnInit {
       id: doc.id,
       ...doc.data(),
     }));
+    this.totalPages = Math.ceil(this.datosGuardados.length / this.itemsPerPage);
+    this.actualizarPagina();
     this.cdr.markForCheck();
+  }
+
+  actualizarPagina() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.pagedDatosGuardados = this.datosGuardados.slice(startIndex, endIndex);
+  }
+
+  cambiarItemsPorPagina() {
+    this.totalPages = Math.ceil(this.datosGuardados.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.actualizarPagina();
+  }
+
+  paginaAnterior() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.actualizarPagina();
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.actualizarPagina();
+    }
   }
 
   abrirModal() {
@@ -176,6 +208,10 @@ export default class CheckListCadiComponent implements OnInit {
       const docRef = await addDoc(nuevosDesplieguesRef, { ...datos, ambiente });
       console.log('Nuevo despliegue guardado con ID: ', docRef.id);
       this.datosGuardados.push({ ...datos, id: docRef.id });
+      this.totalPages = Math.ceil(
+        this.datosGuardados.length / this.itemsPerPage
+      );
+      this.actualizarPagina();
       this.cdr.markForCheck();
       this.cerrarModalNuevoDespliegue();
     } catch (error) {
@@ -199,7 +235,7 @@ export default class CheckListCadiComponent implements OnInit {
       if (index > -1) {
         this.datosGuardados[index] = datos;
       }
-
+      this.actualizarPagina();
       this.cdr.markForCheck();
       this.cerrarModalNuevoDespliegue();
     } catch (error) {
@@ -213,6 +249,10 @@ export default class CheckListCadiComponent implements OnInit {
       const docRef = doc(db, `nuevosDespliegues_${ambiente}`, id);
       await deleteDoc(docRef);
       this.datosGuardados = this.datosGuardados.filter((_, i) => i !== index);
+      this.totalPages = Math.ceil(
+        this.datosGuardados.length / this.itemsPerPage
+      );
+      this.actualizarPagina();
       console.log('Despliegue eliminado con ID: ', id);
       this.showConfirmDeleteModal = false;
       this.cdr.markForCheck();

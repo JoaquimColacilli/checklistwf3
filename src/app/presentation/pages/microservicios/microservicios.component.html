@@ -1,0 +1,173 @@
+<h1 class="font-bold text-lg lg:text-3xl mb-4">Microservicios</h1>
+
+<div class="flex justify-end mb-4">
+  <button class="btn-primary mr-2" (click)="abrirNuevoMicroservicioModal()">
+    Nuevo Microservicio
+  </button>
+</div>
+
+<!-- Modal Nuevo Microservicio -->
+<div
+  *ngIf="modalNuevoMicroservicioAbierto"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
+  <div
+    class="bg-gray-900 rounded-lg w-1/4 max-h-[80%] max-w-[80%] overflow-auto px-3 py-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full"
+  >
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold text-center text-white mb-4">
+        Nuevo Microservicio
+      </h2>
+      <form (ngSubmit)="guardarMicroservicio()">
+        <div class="mb-4">
+          <label class="block text-gray-300 mb-1" for="nombre">Nombre</label>
+          <input
+            id="nombre"
+            [(ngModel)]="nuevoMicroservicio.nombre"
+            name="nombre"
+            class="w-full rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-300 mb-1" for="ambiente"
+            >Ambiente</label
+          >
+          <select
+            id="ambiente"
+            [(ngModel)]="nuevoMicroservicio.ambiente"
+            name="ambiente"
+            class="w-full rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+          >
+            <option value="WF3">WF3/Actas Digitales</option>
+            <option value="CADI">CADI</option>
+          </select>
+        </div>
+        <div class="flex justify-end mt-4">
+          <button
+            type="button"
+            class="btn-primary mr-1"
+            (click)="cerrarModalNuevoMicroservicio()"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div
+  *ngIf="showConfirmDeleteModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
+  <div class="bg-gray-900 rounded-lg p-4 max-w-sm">
+    <h2 class="text-lg font-bold text-center text-white mb-3">
+      Confirmar eliminación
+    </h2>
+    <p class="text-gray-300 mb-4 text-center justify-center">
+      ¿Está seguro de eliminar el microservicio
+      <strong>{{ microservicioToDelete?.nombre }}</strong
+      >?
+    </p>
+    <div class="flex justify-end">
+      <button class="btn-primary mr-2" (click)="showConfirmDeleteModal = false">
+        Cancelar
+      </button>
+      <button class="btn-primary" (click)="eliminarMicroservicio()">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla Microservicios -->
+<div class="overflow-x-auto mt-4">
+  <table class="w-full table-auto bg-gray-800 rounded-lg overflow-hidden">
+    <thead>
+      <tr class="bg-gray-700 text-white">
+        <th class="px-4 py-2">ID</th>
+        <th class="px-4 py-2">Nombre</th>
+        <th class="px-4 py-2">Ambiente</th>
+        <th class="px-4 py-2">Fecha de Alta</th>
+        <th class="px-4 py-2">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let microservicio of pagedMicroservicios; let i = index"
+        class="hover:bg-gray-700 transition-colors"
+      >
+        <td class="px-4 py-2 border-b border-gray-700 text-center">
+          {{ i + 1 + (currentPage - 1) * itemsPerPage }}
+        </td>
+        <td class="px-4 py-2 border-b border-gray-700 text-center">
+          {{ microservicio.nombre }}
+        </td>
+        <td class="px-4 py-2 border-b border-gray-700 text-center">
+          {{ microservicio.ambiente }}
+        </td>
+        <td class="px-4 py-2 border-b border-gray-700 text-center">
+          {{ microservicio.fechaAlta }}
+        </td>
+        <td class="px-4 py-2 border-b border-gray-700 text-center">
+          <button
+            class="btn-secondary transition-transform duration-300 ease-in-out hover:scale-105 mr-2"
+            (click)="editarMicroservicio(i)"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button
+            class="btn-secondary transition-transform duration-300 ease-in-out hover:scale-105"
+            (click)="confirmDeleteMicroservicio(i)"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Paginador Mejorado -->
+<div
+  class="flex justify-between items-center mt-4 px-4 py-2 bg-gray-900 rounded-md"
+>
+  <div class="flex items-center">
+    <label for="itemsPerPage" class="text-gray-300 mr-2"
+      >Items por página:</label
+    >
+    <select
+      id="itemsPerPage"
+      [(ngModel)]="itemsPerPage"
+      (change)="cambiarItemsPorPagina()"
+      class="rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+    >
+      <option *ngFor="let size of [5, 10, 15, 20]" [value]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+  <div class="flex items-center space-x-2">
+    <button
+      class="btn-secondary"
+      (click)="paginaAnterior()"
+      [disabled]="currentPage === 1"
+      [class.opacity-50]="currentPage === 1"
+    >
+      Anterior
+    </button>
+    <span class="text-gray-300"
+      >Página {{ currentPage }} de {{ totalPages }}</span
+    >
+    <button
+      class="btn-secondary"
+      (click)="paginaSiguiente()"
+      [disabled]="currentPage === totalPages"
+      [class.opacity-50]="currentPage === totalPages"
+    >
+      Siguiente
+    </button>
+  </div>
+</div>
