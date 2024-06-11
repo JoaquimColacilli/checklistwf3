@@ -53,8 +53,6 @@ export class NuevoDespliegueComponent implements OnInit, OnChanges {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    console.log(this.ambiente);
-
     this.cargarUsuarios();
     this.cargarMicroservicios();
 
@@ -142,13 +140,23 @@ export class NuevoDespliegueComponent implements OnInit, OnChanges {
       this.responsable.trim() !== '' &&
       this.tag.trim() !== '' &&
       this.microservicio.trim() !== '' &&
-      this.auditor.trim() !== '' &&
       this.fecha.trim() !== ''
     );
   }
 
+  get todosResponsablesMarcados(): boolean {
+    return (
+      this.responsableChecklistSeleccionado.length === this.campos.length &&
+      this.responsableChecklistSeleccionado.every((item) => item)
+    );
+  }
+
   get puedeGuardar(): boolean {
-    return this.todosMarcados && this.inputsLlenos;
+    return this.inputsLlenos && this.todosResponsablesMarcados;
+  }
+
+  checkResponsableStatus() {
+    this.cdr.markForCheck();
   }
 
   guardarDatos() {
@@ -182,5 +190,17 @@ export class NuevoDespliegueComponent implements OnInit, OnChanges {
       };
       this.guardar.emit(datos);
     }
+  }
+
+  getUsuariosFiltradosParaResponsable() {
+    return this.usuarios.filter(
+      (usuario) => usuario.nombre + ' ' + usuario.apellido !== this.auditor
+    );
+  }
+
+  getUsuariosFiltradosParaAuditor() {
+    return this.usuarios.filter(
+      (usuario) => usuario.nombre + ' ' + usuario.apellido !== this.responsable
+    );
   }
 }

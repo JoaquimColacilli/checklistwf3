@@ -14,12 +14,14 @@
             <label class="block text-white mb-1">Responsable</label>
             <select
               [(ngModel)]="responsable"
-              (ngModelChange)="despliegueEditado.responsable = $event"
+              (ngModelChange)="
+                despliegueEditado.responsable = $event; checkResponsableStatus()
+              "
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             >
               <option *ngIf="loadingUsuarios" disabled>Cargando...</option>
               <option
-                *ngFor="let usuario of usuarios"
+                *ngFor="let usuario of getUsuariosFiltradosParaResponsable()"
                 [value]="usuario.nombre + ' ' + usuario.apellido"
               >
                 {{ usuario.nombre }} {{ usuario.apellido }}
@@ -30,7 +32,9 @@
             <label class="block text-white mb-1">Tag</label>
             <input
               [(ngModel)]="tag"
-              (ngModelChange)="despliegueEditado.tag = $event"
+              (ngModelChange)="
+                despliegueEditado.tag = $event; checkResponsableStatus()
+              "
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             />
           </div>
@@ -38,7 +42,10 @@
             <label class="block text-white mb-1">Microservicio</label>
             <select
               [(ngModel)]="microservicio"
-              (ngModelChange)="despliegueEditado.microservicio = $event"
+              (ngModelChange)="
+                despliegueEditado.microservicio = $event;
+                checkResponsableStatus()
+              "
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             >
               <option *ngIf="loadingMicroservicios" disabled>
@@ -56,12 +63,14 @@
             <label class="block text-white mb-1">Auditor</label>
             <select
               [(ngModel)]="auditor"
-              (ngModelChange)="despliegueEditado.auditor = $event"
+              (ngModelChange)="
+                despliegueEditado.auditor = $event; checkResponsableStatus()
+              "
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             >
               <option *ngIf="loadingUsuarios" disabled>Cargando...</option>
               <option
-                *ngFor="let usuario of usuarios"
+                *ngFor="let usuario of getUsuariosFiltradosParaAuditor()"
                 [value]="usuario.nombre + ' ' + usuario.apellido"
               >
                 {{ usuario.nombre }} {{ usuario.apellido }}
@@ -72,7 +81,9 @@
             <label class="block text-white mb-1">Fecha</label>
             <input
               [(ngModel)]="fecha"
-              (ngModelChange)="despliegueEditado.fecha = $event"
+              (ngModelChange)="
+                despliegueEditado.fecha = $event; checkResponsableStatus()
+              "
               type="date"
               class="w-full h-10 rounded-md text-gray-900 bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             />
@@ -101,13 +112,11 @@
                   <input
                     type="checkbox"
                     [(ngModel)]="responsableChecklistSeleccionado[i]"
-                    (ngModelChange)="
-                      responsableChecklistSeleccionado[i] !== undefined &&
-                        (responsableChecklistSeleccionado[i] = $event)
-                    "
+                    (ngModelChange)="checkResponsableStatus()"
                     class="transform scale-100"
                   />
                 </div>
+
                 <div class="flex flex-col items-center">
                   <span class="text-white">A</span>
                   <input
@@ -131,8 +140,8 @@
       <button
         class="btn-primary"
         [disabled]="!puedeGuardar"
-        matTooltip="No se puede guardar hasta que estén marcados todos los campos llenos"
-        [matTooltipDisabled]="todosMarcados && inputsLlenos"
+        matTooltip="No se puede guardar hasta que todos los campos estén llenos y todos los responsables estén marcados"
+        [matTooltipDisabled]="puedeGuardar"
         (click)="guardarDatos()"
       >
         Guardar
