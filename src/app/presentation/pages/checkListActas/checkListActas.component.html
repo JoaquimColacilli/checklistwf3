@@ -47,13 +47,10 @@
               {{ i + 1 }}
             </td>
             <td class="px-4 py-2 border-b border-gray-700 boxPerso">
-              <div class="flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="campo.responsableChecked"
-                  (change)="checkResponsableStatus()"
-                  class="mr-2"
-                />
+              <div
+                *ngIf="!campo.editando; else mostrarValor"
+                class="w-full h-full flex items-center justify-center"
+              >
                 {{ campo.valor }}
               </div>
               <ng-template #mostrarValor>
@@ -97,13 +94,7 @@
         <button class="btn-primary mr-1" (click)="cerrarModal()">
           Cancelar
         </button>
-        <button
-          class="btn-primary"
-          (click)="guardarCambios()"
-          [disabled]="!todosResponsablesMarcados()"
-        >
-          Guardar
-        </button>
+        <button class="btn-primary" (click)="guardarCambios()">Guardar</button>
       </div>
     </div>
   </div>
